@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MARI — Заказ еды</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg-main:#F6F4F1;
+  --bg-card:#FFFFFF;
+  --accent:#B89B7C;
+  --accent-hover:#A88A6A;
+  --text:#2E2E2E;
+  --radius:16px;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:'Cormorant Garamond',serif;
+  background:var(--bg-main);
+  color:var(--text);
+}
+
+.hidden{display:none}
+
+.card{
+  background:var(--bg-card);
+  border-radius:var(--radius);
+  padding:24px;
+  box-shadow:0 6px 20px rgba(0,0,0,.05);
+}
+
+.pc-select{
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:16px;
+}
+
+select,textarea,button{
+  width:100%;
+  padding:14px;
+  border-radius:var(--radius);
+  border:1px solid #ddd;
+  font-size:18px;
+  font-family:inherit;
+}
+
+button{
+  background:var(--accent);
+  color:#fff;
+  border:none;
+  cursor:pointer;
+  transition:.25s;
+}
+button:hover{background:var(--accent-hover)}
+
+.container{max-width:520px;margin:0 auto;padding:16px}
+
+.menu-row{
+  background:#fff;
+  border-radius:14px;
+  padding:12px;
+  margin-bottom:10px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  animation:pop .35s forwards;
+}
+.menu-name{font-style:italic}
+
+@keyframes pop{
+  from{opacity:0;transform:scale(.9)}
+  to{opacity:1;transform:scale(1)}
+}
+
+.cart-btn{
+  position:fixed;
+  right:16px;
+  bottom:16px;
+  width:56px;
+  height:56px;
+  border-radius:50%;
+  background:var(--accent);
+  color:#fff;
+  font-size:24px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  box-shadow:0 4px 14px rgba(0,0,0,.25);
+  z-index:10;
+}
+
+.cart-count{
+  position:absolute;
+  top:-6px;
+  right:-6px;
+  background:red;
+  color:#fff;
+  width:20px;
+  height:20px;
+  border-radius:50%;
+  font-size:12px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+
+.cart-panel{
+  position:fixed;
+  top:0;
+  right:0;
+  width:90%;
+  max-width:400px;
+  height:100%;
+  background:#fff;
+  padding:16px;
+  transform:translateX(100%);
+  transition:.4s;
+  z-index:20;
+  display:flex;
+  flex-direction:column;
+}
+.cart-panel.open{transform:translateX(0)}
+
+.cart-item{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:6px;
+  animation:pop .25s forwards;
+}
+
+.cart-item button{
+  width:20px;
+  height:20px;
+  background:red;
+  border-radius:4px;
+  font-size:12px;
+  padding:0;
+}
+
+.overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.45);
+  display:none;
+  justify-content:center;
+  align-items:center;
+  z-index:30;
+}
+.overlay.show{display:flex}
+
+.success{
+  background:#fff;
+  padding:28px;
+  border-radius:16px;
+  text-align:center;
+  animation:pop .4s forwards;
+}
+</style>
+</head>
+
+<body>
+
+<!-- ШАГ 1 -->
+<div id="stepPc" class="pc-select">
+  <div class="card">
+    <h2>MARI coffee & terrace</h2>
+    <p>Выберите номер ПК</p>
+    <select id="pcNumber"></select>
+    <button style="margin-top:14px" onclick="goToMenu()">Перейти к меню</button>
+  </div>
+</div>
+
+<!-- ШАГ 2 -->
+<div id="stepMenu" class="hidden">
+  <div class="container">
+    <h2>Меню · ПК № <span id="pcLabel"></span></h2>
+    <div id="menu"></div>
+  </div>
+</div>
+
+<!-- КОРЗИНА -->
+<button class="cart-btn" onclick="toggleCart()">🛒
+  <div class="cart-count" id="cartCount">0</div>
+</button>
+
+<div class="cart-panel" id="cartPanel">
+  <strong>Корзина</strong>
+  <div id="cartItems" style="flex:1;overflow:auto;margin:10px 0"></div>
+  <textarea id="comment" placeholder="Комментарий"></textarea>
+  <button style="margin-top:10px" onclick="sendOrder()">Отправить заказ</button>
+</div>
+
+<!-- УСПЕХ -->
+<div class="overlay" id="overlay">
+  <div class="success">
+    <h2>Заказ принят</h2>
+    <p>Ожидайте доставку</p>
+    <button onclick="location.reload()">Новый заказ</button>
+  </div>
+</div>
+
+<script>
+const pcSelect = document.getElementById('pcNumber');
+for (let i = 1; i <= 40; i++) {
+  pcSelect.innerHTML += `<option value="${i}">ПК ${i}</option>`;
+}
+
+const menuData = [
+  {name:'Эспрессо 30 мл',price:1290},
+  {name:'Американо 230 мл',price:1590},
+  {name:'Капучино 230 мл',price:1990},
+  {name:'Латте 340 мл',price:2290},
+  {name:'Раф 240 мл',price:2290},
+  {name:'Батч брю 240 мл',price:1990},
+  {name:'Ванильный латте 350 мл',price:2490},
+  {name:'Матча коко латте 350 мл',price:2490},
+  {name:'Borjomi 330 мл',price:3190},
+  {name:'Coca-Cola 250 мл',price:1290},
+  {name:'Red Bull 250 мл',price:2390},
+  {name:'Медовик',price:2590},
+  {name:'Классический чизкейк',price:3290},
+  {name:'Mojito 300 мл',price:2490}
+];
+
+const cart = [];
+
+function goToMenu() {
+  document.getElementById('stepPc').classList.add('hidden');
+  document.getElementById('stepMenu').classList.remove('hidden');
+  document.getElementById('pcLabel').innerText = pcSelect.value;
+  renderMenu();
+}
+
+function renderMenu() {
+  const box = document.getElementById('menu');
+  box.innerHTML = '';
+  menuData.forEach(item => {
+    const row = document.createElement('div');
+    row.className = 'menu-row';
+    row.innerHTML = `
+      <span class="menu-name">${item.name}</span>
+      <div>
+        ${item.price} ₸
+        <button onclick="addToCart('${item.name}', ${item.price})">＋</button>
+      </div>`;
+    box.appendChild(row);
+  });
+}
+
+function addToCart(name, price) {
+  cart.push({ name, price });
+  renderCart();
+}
+
+function renderCart() {
+  const box = document.getElementById('cartItems');
+  box.innerHTML = '';
+  let sum = 0;
+
+  cart.forEach((item, index) => {
+    sum += item.price;
+    box.innerHTML += `
+      <div class="cart-item">
+        <span>${item.name}</span>
+        <span>${item.price} ₸ 
+          <button onclick="removeFromCart(${index})">✕</button>
+        </span>
+      </div>`;
+  });
+
+  box.innerHTML += `<strong>Итого: ${sum} ₸</strong>`;
+  document.getElementById('cartCount').innerText = cart.length;
+}
+
+function removeFromCart(index) {
+  cart.splice(index, 1);
+  renderCart();
+}
+
+function toggleCart() {
+  document.getElementById('cartPanel').classList.toggle('open');
+}
+
+function sendOrder() {
+  if (!cart.length) {
+    alert('Корзина пуста');
+    return;
+  }
+
+  fetch('https://script.google.com/macros/s/AKfycbwUf4ivkksaNwsq6AliAYCHdeqQASZeKVUZ1SE8ZTOZNUK56NA8a-26Chb0ypsP2kcxgw/exec', {
+    method: 'POST',
+    body: JSON.stringify({
+      pc: pcSelect.value,
+      items: cart.map(i => i.name).join(', '),
+      sum: cart.reduce((a, b) => a + b.price, 0),
+      comment: document.getElementById('comment').value
+    })
+  })
+  .then(() => {
+    document.getElementById('overlay').classList.add('show');
+    cart.length = 0;
+    renderCart();
+  })
+  .catch(err => {
+    alert('Ошибка отправки заказа');
+    console.error(err);
+  });
+}
+</script>
+
+
+</body>
+</html>
