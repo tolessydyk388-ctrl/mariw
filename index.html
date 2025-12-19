@@ -1,185 +1,144 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MARI — Заказ еды</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&display=swap" rel="stylesheet">
 
 <style>
-:root {
-  --bg-main:#F6F4F1;
-  --bg-card:#FFFFFF;
+:root{
+  --bg:#F6F4F1;
+  --card:#fff;
   --accent:#B89B7C;
   --accent-hover:#A88A6A;
   --text:#2E2E2E;
-  --radius:16px;
 }
 
 *{box-sizing:border-box}
 body{
   margin:0;
   font-family:'Cormorant Garamond',serif;
-  background:var(--bg-main);
+  background:var(--bg);
   color:var(--text);
+  overflow-x:hidden;
 }
+
+/* ===== АНИМАЦИИ ===== */
+.fade-down{animation:fadeDown .8s cubic-bezier(.2,.8,.2,1)}
+@keyframes fadeDown{from{opacity:0;transform:translateY(-40px)}to{opacity:1}}
 
 .hidden{display:none}
 
-.card{
-  background:var(--bg-card);
-  border-radius:var(--radius);
-  padding:24px;
-  box-shadow:0 6px 20px rgba(0,0,0,.05);
-}
-
-.pc-select{
-  min-height:100vh;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  padding:16px;
+/* ===== ПК ===== */
+.pc-select{min-height:100vh;display:flex;justify-content:center;align-items:center;padding:20px}
+.pc-card{
+  background:#fff;padding:36px;border-radius:24px;
+  width:100%;max-width:360px;text-align:center;
+  box-shadow:0 25px 60px rgba(0,0,0,.15)
 }
 
 select,textarea,button{
-  width:100%;
-  padding:14px;
-  border-radius:var(--radius);
-  border:1px solid #ddd;
-  font-size:18px;
-  font-family:inherit;
+  width:100%;padding:14px;margin-top:14px;
+  font-size:18px;border-radius:12px;border:1px solid #ddd;font-family:inherit
 }
 
 button{
-  background:var(--accent);
-  color:#fff;
-  border:none;
-  cursor:pointer;
-  transition:.25s;
+  background:var(--accent);color:#fff;border:none;
+  cursor:pointer;transition:.25s
 }
-button:hover{background:var(--accent-hover)}
+button:hover{background:var(--accent-hover);transform:translateY(-1px)}
+button:active{transform:scale(.96)}
 
-.container{max-width:520px;margin:0 auto;padding:16px}
+.container{max-width:560px;margin:auto;padding:16px}
+
+/* ===== МЕНЮ ===== */
+.category{margin-bottom:14px}
+.category-title{
+  background:#fff;padding:16px;border-radius:16px;
+  font-weight:600;cursor:pointer;
+  box-shadow:0 6px 18px rgba(0,0,0,.08)
+}
+.category-items{max-height:0;overflow:hidden;transition:max-height .45s ease}
+.category.open .category-items{max-height:3000px}
 
 .menu-row{
-  background:#fff;
-  border-radius:14px;
-  padding:12px;
-  margin-bottom:10px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  animation:pop .35s forwards;
+  background:#fff;border-radius:14px;padding:12px;
+  margin:10px 0;display:flex;justify-content:space-between;
+  animation:item .3s ease
 }
-.menu-name{font-style:italic}
+@keyframes item{from{opacity:0;transform:translateY(-10px)}to{opacity:1}}
 
-@keyframes pop{
-  from{opacity:0;transform:scale(.9)}
-  to{opacity:1;transform:scale(1)}
-}
-
+/* ===== КОРЗИНА ===== */
 .cart-btn{
-  position:fixed;
-  right:16px;
-  bottom:16px;
-  width:56px;
-  height:56px;
-  border-radius:50%;
-  background:var(--accent);
-  color:#fff;
-  font-size:24px;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  box-shadow:0 4px 14px rgba(0,0,0,.25);
-  z-index:10;
+  position:fixed;right:16px;bottom:16px;
+  width:56px;height:56px;border-radius:50%;
+  background:var(--accent);color:#fff;font-size:24px;
+  display:flex;justify-content:center;align-items:center;
+  box-shadow:0 6px 20px rgba(0,0,0,.3);z-index:10
 }
-
 .cart-count{
-  position:absolute;
-  top:-6px;
-  right:-6px;
-  background:red;
-  color:#fff;
-  width:20px;
-  height:20px;
-  border-radius:50%;
-  font-size:12px;
-  display:flex;
-  justify-content:center;
-  align-items:center;
+  position:absolute;top:-6px;right:-6px;
+  background:red;width:20px;height:20px;border-radius:50%;
+  font-size:12px;display:flex;align-items:center;justify-content:center
 }
 
 .cart-panel{
-  position:fixed;
-  top:0;
-  right:0;
-  width:90%;
-  max-width:400px;
-  height:100%;
-  background:#fff;
-  padding:16px;
-  transform:translateX(100%);
-  transition:.4s;
-  z-index:20;
-  display:flex;
-  flex-direction:column;
+  position:fixed;top:0;right:0;width:90%;max-width:400px;height:100%;
+  background:#fff;padding:16px;transform:translateX(100%);
+  transition:.4s;z-index:20;display:flex;flex-direction:column
 }
-.cart-panel.open{transform:translateX(0)}
+.cart-panel.open{transform:none}
 
-.cart-item{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-bottom:6px;
-  animation:pop .25s forwards;
+.cart-header{display:flex;justify-content:space-between;align-items:center}
+.cart-header button{
+  width:28px;height:28px;padding:0;border-radius:8px;
+  background:#eee;color:#333
 }
 
+.cart-item{display:flex;justify-content:space-between;margin-bottom:6px}
 .cart-item button{
-  width:20px;
-  height:20px;
-  background:red;
-  border-radius:4px;
-  font-size:12px;
-  padding:0;
+  width:22px;height:22px;padding:0;
+  background:#e74c3c;border-radius:6px;font-size:12px
 }
 
+/* ===== OVERLAY ===== */
 .overlay{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.45);
-  display:none;
-  justify-content:center;
-  align-items:center;
-  z-index:30;
+  position:fixed;inset:0;background:rgba(0,0,0,.45);
+  display:none;align-items:center;justify-content:center;z-index:50
 }
 .overlay.show{display:flex}
-
 .success{
-  background:#fff;
-  padding:28px;
-  border-radius:16px;
-  text-align:center;
-  animation:pop .4s forwards;
+  background:#fff;padding:30px;border-radius:20px;
+  text-align:center;animation:fadeDown .4s
+}
+
+/* ===== ПОЛЁТ ===== */
+.fly{
+  position:fixed;z-index:999;pointer-events:none;
+  animation:fly .7s cubic-bezier(.4,0,.2,1)
+}
+@keyframes fly{
+  to{transform:translate(var(--x),var(--y)) scale(.1);opacity:0}
 }
 </style>
 </head>
 
 <body>
 
-<!-- ШАГ 1 -->
-<div id="stepPc" class="pc-select">
-  <div class="card">
-    <h2>MARI coffee & terrace</h2>
+<!-- ПК -->
+<div id="stepPc" class="pc-select fade-down">
+  <div class="pc-card">
+    <h2>MARI coffee & terace</h2>
     <p>Выберите номер ПК</p>
     <select id="pcNumber"></select>
-    <button style="margin-top:14px" onclick="goToMenu()">Перейти к меню</button>
+    <button onclick="goToMenu()">Перейти к меню</button>
   </div>
 </div>
 
-<!-- ШАГ 2 -->
-<div id="stepMenu" class="hidden">
+<!-- МЕНЮ -->
+<div id="stepMenu" class="hidden fade-down">
   <div class="container">
     <h2>Меню · ПК № <span id="pcLabel"></span></h2>
     <div id="menu"></div>
@@ -187,211 +146,164 @@ button:hover{background:var(--accent-hover)}
 </div>
 
 <!-- КОРЗИНА -->
-<button class="cart-btn" onclick="toggleCart()">🛒
+<div class="cart-btn" onclick="toggleCart()">🛒
   <div class="cart-count" id="cartCount">0</div>
-</button>
+</div>
 
 <div class="cart-panel" id="cartPanel">
-  <strong>Корзина</strong>
+  <div class="cart-header">
+    <strong>Корзина</strong>
+    <button onclick="toggleCart()">✕</button>
+  </div>
   <div id="cartItems" style="flex:1;overflow:auto;margin:10px 0"></div>
   <textarea id="comment" placeholder="Комментарий"></textarea>
-  <button style="margin-top:10px" onclick="sendOrder()">Отправить заказ</button>
+  <button onclick="confirmOrder()">Отправить заказ</button>
 </div>
 
 <!-- УСПЕХ -->
-<div class="overlay" id="overlay">
+<div class="overlay" id="successOverlay">
   <div class="success">
-    <h2>Заказ принят</h2>
-    <p>Ожидайте доставку</p>
-    <button onclick="location.reload()">Новый заказ</button>
+    <h2>Спасибо за ваш заказ!</h2>
+    <p>Ожидайте доставку к вашему ПК</p>
+    <button onclick="location.reload()">ОК</button>
   </div>
 </div>
 
 <script>
-const pcSelect = document.getElementById('pcNumber');
-for (let i = 1; i <= 40; i++) {
-  pcSelect.innerHTML += `<option value="${i}">ПК ${i}</option>`;
-}
+/* ===== НАСТРОЙКИ TELEGRAM ===== */
+const TG_BOT_TOKEN = '8591575115:AAERzHGB3da6TzPZPa4W4vE4Iupk_Qia40Q';
+const TG_CHAT_ID = '883017812';
 
-const menuData = [
-  /* КЛАССИЧЕСКИЕ НАПИТКИ */
-{ name: 'Эспрессо 30 мл', price: 1290 },
-{ name: 'Американо 230 мл', price: 1590 },
-{ name: 'Капучино 230 мл', price: 1990 },
-{ name: 'Капучино на альтернативном молоке 230 мл', price: 2390 },
-{ name: 'Латте 340 мл', price: 2290 },
-{ name: 'Раф 240 мл', price: 2290 },
-{ name: 'Батч брю 240 мл', price: 1990 },
+/* ===== ПК ===== */
+const pcSelect=document.getElementById('pcNumber');
+for(let i=1;i<=40;i++)pcSelect.innerHTML+=`<option value="${i}">ПК ${i}</option>`;
 
-/* АВТОРСКИЕ НАПИТКИ */
-{ name: 'Ванильный латте 350 мл', price: 2490 },
-{ name: 'Банановый холодный латте 350 мл', price: 2490 },
-{ name: 'Мокка кола брю 350 мл', price: 2490 },
-{ name: 'Матча коко латте 350 мл', price: 2490 },
-
-/* АВТОРСКИЕ ЧАИ */
-{ name: 'Чай марокканский 1000 мл', price: 2990 },
-{ name: 'Чай облепиховый 1000 мл', price: 2990 },
-{ name: 'Чай ташкентский 1000 мл', price: 2990 },
-{ name: 'Чай ягодный 1000 мл', price: 2990 },
-
-/* ЛИСТОВЫЕ ЧАИ */
-{ name: 'Чай Ассам 1000 мл', price: 2590 },
-{ name: 'Чай Жасминовая улитка 1000 мл', price: 2590 },
-{ name: 'Чай Молочный улун 1000 мл', price: 2590 },
-{ name: 'Чай Пуэр 1000 мл', price: 2590 },
-{ name: 'Чай Сенча 1000 мл', price: 2590 },
-{ name: 'Чай Травяной 1000 мл', price: 2590 },
-{ name: 'Чай Эрл Грей 1000 мл', price: 2590 },
-
-/* НАТУРАЛЬНЫЕ ЛИМОНАДЫ 1000 мл */
-{ name: 'Гуанабана ваниль 1000 мл', price: 3190 },
-{ name: 'Каламансий личи 1000 мл', price: 3190 },
-{ name: 'Ананас щавель 1000 мл', price: 3190 },
-{ name: 'Классический лимонад 1000 мл', price: 3190 },
-{ name: 'Малина каркаде 1000 мл', price: 3190 },
-
-/* НАТУРАЛЬНЫЕ ЛИМОНАДЫ 300 мл */
-{ name: 'Гуанабана ваниль 300 мл', price: 1490 },
-{ name: 'Каламансий личи 300 мл', price: 1490 },
-{ name: 'Ананас щавель 300 мл', price: 1490 },
-{ name: 'Классический лимонад 300 мл', price: 1490 },
-{ name: 'Малина каркаде 300 мл', price: 1490 },
-
-/* ВОДА */
-{ name: 'Tassay 230 мл', price: 1590 },
-{ name: 'Borjomi 330 мл', price: 3190 },
-{ name: 'Tassay Emerald/Excellent 750 мл', price: 2990 },
-{ name: 'Acqua Panna 750 мл', price: 3890 },
-{ name: 'San Pellegrino 750 мл', price: 3890 },
-
-/* ПРОХЛАДИТЕЛЬНЫЕ НАПИТКИ */
-{ name: 'Сок Pago 200 мл', price: 2490 },
-{ name: 'Coca-Cola 250 мл', price: 1290 },
-{ name: 'Coca-Cola Sugar Free 250 мл', price: 1290 },
-{ name: 'Sprite 250 мл', price: 1290 },
-{ name: 'Fanta 250 мл', price: 1290 },
-{ name: 'Schweppes 400 мл', price: 1390 },
-{ name: 'Red Bull 250 мл', price: 2390 },
-
-/* СВЕЖЕВЫЖАТЫЕ СОКИ */
-{ name: 'Апельсин фреш 200 мл', price: 2790 },
-{ name: 'Грейпфрут фреш 200 мл', price: 2790 },
-{ name: 'Яблоко фреш 200 мл', price: 2790 },
-{ name: 'Морковь фреш 200 мл', price: 1490 },
-
-/* ДОП К ЧАЮ */
-{ name: 'Лайм', price: 890 },
-{ name: 'Лимон', price: 590 },
-{ name: 'Мёд', price: 690 },
-{ name: 'Молоко', price: 290 },
-{ name: 'Молоко альтернативное', price: 690 },
-{ name: 'Мята', price: 249 },
-{ name: 'Пюре фруктовое', price: 590 },
-{ name: 'Сироп', price: 490 },
-
-/* ДЕСЕРТЫ */
-{ name: 'Медовик', price: 2590 },
-{ name: 'Молочная девочка', price: 2590 },
-{ name: 'Классический чизкейк', price: 3290 },
-{ name: 'Чизкейк манго маракуйя', price: 2790 },
-{ name: 'Сникерс', price: 3190 },
-{ name: 'Лава кейк', price: 3190 },
-
-/* NON-ALCOHOL КОКТЕЙЛИ */
-{ name: 'Negroni 300 мл', price: 2490 },
-{ name: 'Bellini 300 мл', price: 2490 },
-{ name: 'Aperol Spritz 300 мл', price: 2490 },
-{ name: 'Mojito 300 мл', price: 2490 }
-
+/* ===== МЕНЮ ===== */
+const menuData=[
+{name:'Эспрессо 30 мл',price:1290},
+{name:'Американо 230 мл',price:1590},
+{name:'Капучино 230 мл',price:1990},
+{name:'Латте 340 мл',price:2290},
+{name:'Раф 240 мл',price:2290},
+{name:'Медовик',price:2590},
+{name:'Чизкейк',price:3290},
+{name:'Mojito 300 мл',price:2490}
 ];
 
+const categories={
+  "Кофе":menuData.slice(0,4),
+  "Десерты":menuData.slice(4,6),
+  "Коктейли":menuData.slice(6)
+};
 
-const cart = [];
+const cart=[];
 
-function goToMenu() {
-  document.getElementById('stepPc').classList.add('hidden');
-  document.getElementById('stepMenu').classList.remove('hidden');
-  document.getElementById('pcLabel').innerText = pcSelect.value;
+/* ===== ЛОГИКА ===== */
+function goToMenu(){
+  stepPc.classList.add('hidden');
+  stepMenu.classList.remove('hidden');
+  pcLabel.innerText=pcSelect.value;
   renderMenu();
 }
 
-function renderMenu() {
-  const box = document.getElementById('menu');
-  box.innerHTML = '';
-  menuData.forEach(item => {
-    const row = document.createElement('div');
-    row.className = 'menu-row';
-    row.innerHTML = `
-      <span class="menu-name">${item.name}</span>
-      <div>
-        ${item.price} ₸
-        <button onclick="addToCart('${item.name}', ${item.price})">＋</button>
-      </div>`;
-    box.appendChild(row);
+function renderMenu(){
+  menu.innerHTML='';
+  Object.keys(categories).forEach(cat=>{
+    const c=document.createElement('div');
+    c.className='category';
+    c.innerHTML=`<div class="category-title" onclick="this.parentNode.classList.toggle('open')">${cat}</div><div class="category-items"></div>`;
+    const items=c.querySelector('.category-items');
+    categories[cat].forEach(i=>{
+      items.innerHTML+=`<div class="menu-row"><span>${i.name}</span><span>${i.price} ₸ <button onclick="addToCart('${i.name}',${i.price});fly(this)">＋</button></span></div>`;
+    });
+    menu.appendChild(c);
   });
 }
 
-function addToCart(name, price) {
-  cart.push({ name, price });
-  renderCart();
-}
-
-function renderCart() {
-  const box = document.getElementById('cartItems');
-  box.innerHTML = '';
-  let sum = 0;
-
-  cart.forEach((item, index) => {
-    sum += item.price;
-    box.innerHTML += `
-      <div class="cart-item">
-        <span>${item.name}</span>
-        <span>${item.price} ₸ 
-          <button onclick="removeFromCart(${index})">✕</button>
-        </span>
-      </div>`;
+function addToCart(name,price){cart.push({name,price});renderCart()}
+function renderCart(){
+  cartItems.innerHTML='';
+  let sum=0;
+  cart.forEach((i,idx)=>{
+    sum+=i.price;
+    cartItems.innerHTML+=`<div class="cart-item"><span>${i.name}</span><span>${i.price} ₸ <button onclick="cart.splice(${idx},1);renderCart()">✕</button></span></div>`;
   });
-
-  box.innerHTML += `<strong>Итого: ${sum} ₸</strong>`;
-  document.getElementById('cartCount').innerText = cart.length;
+  cartItems.innerHTML+=`<strong>Итого: ${sum} ₸</strong>`;
+  cartCount.innerText=cart.length;
 }
 
-function removeFromCart(index) {
-  cart.splice(index, 1);
-  renderCart();
-}
+function toggleCart(){cartPanel.classList.toggle('open')}
 
-function toggleCart() {
-  document.getElementById('cartPanel').classList.toggle('open');
-}
-
-function sendOrder() {
-  if (!cart.length) {
-    alert('Корзина пуста');
-    return;
+/* ===== КЛИК ВНЕ КОРЗИНЫ ===== */
+document.addEventListener('click',e=>{
+  if(cartPanel.classList.contains('open')&&!cartPanel.contains(e.target)&&!e.target.closest('.cart-btn')){
+    toggleCart();
   }
+});
 
-  fetch('https://script.google.com/macros/s/AKfycbwUf4ivkksaNwsq6AliAYCHdeqQASZeKVUZ1SE8ZTOZNUK56NA8a-26Chb0ypsP2kcxgw/exec', {
-    method: 'POST',
-    body: JSON.stringify({
-      pc: pcSelect.value,
-      items: cart.map(i => i.name).join(', '),
-      sum: cart.reduce((a, b) => a + b.price, 0),
-      comment: document.getElementById('comment').value
-    })
+/* ===== ПОДТВЕРЖДЕНИЕ ===== */
+function confirmOrder(){
+  if(!cart.length)return alert('Корзина пуста');
+  if(confirm('Подтвердить заказ?'))sendOrder();
+}
+
+/* ===== ОТПРАВКА ===== */
+function sendOrder(){
+  const text=`🧾 Заказ\nПК: ${pcSelect.value}\n${cart.map(i=>i.name).join(', ')}\n💰 ${cart.reduce((a,b)=>a+b.price,0)} ₸\n💬 ${comment.value}`;
+
+  fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage`,{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({chat_id:TG_CHAT_ID,text})
+  });
+
+  fetch('https://script.google.com/macros/s/AKfycbwUf4ivkksaNwsq6AliAYCHdeqQASZeKVUZ1SE8ZTOZNUK56NA8a-26Chb0ypsP2kcxgw/exec',{
+    method:'POST',
+    body:JSON.stringify({pc:pcSelect.value,items:cart.map(i=>i.name).join(', '),sum:cart.reduce((a,b)=>a+b.price,0),comment:comment.value})
   })
-  .then(() => {
-    document.getElementById('overlay').classList.add('show');
-    cart.length = 0;
-    renderCart();
-  })
-  .catch(err => {
-    alert('Ошибка отправки заказа');
-    console.error(err);
+  
+  .then(()=>{
+    successOverlay.classList.add('show');
+
+    
   });
 }
+
+/* ===== ПОЛЁТ ===== */
+function fly(btn){
+  const r=btn.getBoundingClientRect();
+  const c=document.querySelector('.cart-btn').getBoundingClientRect();
+  const f=document.createElement('div');
+  f.className='fly';f.textContent='＋';
+  f.style.left=r.left+'px';f.style.top=r.top+'px';
+  f.style.setProperty('--x',c.left-r.left+'px');
+  f.style.setProperty('--y',c.top-r.top+'px');
+  document.body.appendChild(f);
+  setTimeout(()=>f.remove(),700);
+}
+
+const orderSound = new Audio('https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg');
+
+function playOrderEffects(){
+  orderSound.play().catch(()=>{});
+  if(navigator.vibrate){
+    navigator.vibrate([200,100,200]);
+  }
+}
+
+
+document.addEventListener('click',e=>{
+  if(
+    cartPanel.classList.contains('open') &&
+    !cartPanel.contains(e.target) &&
+    !e.target.closest('.cart-btn')
+  ){
+    cartPanel.classList.remove('open');
+  }
+});
+
 </script>
+
 
 
 </body>
